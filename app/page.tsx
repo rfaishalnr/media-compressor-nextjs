@@ -370,13 +370,14 @@ export default function Home() {
             <p className="text-sm font-semibold text-gray-800 mb-2">{t.scanQR}</p>
             
             {/* Tempat Gambar QR Code */}
-            <div className="w-full aspect-square bg-gray-50 rounded-lg overflow-hidden border border-gray-200 mb-3 flex items-center justify-center">
-              <img 
-                src="/qr-saweria.png" 
-                alt="QR Code Saweria" 
-                className="w-full h-full object-cover" 
-              />
-            </div>
+{/* Tempat Gambar QR Code */}
+<div className="w-full aspect-square bg-[#FA9E3B] rounded-lg overflow-hidden border border-gray-200 mb-3 flex items-center justify-center p-3">
+  <img 
+    src="/img/qr-saweria.png" 
+    alt="QR Code Saweria" 
+    className="w-full h-full object-contain drop-shadow-sm" 
+  />
+</div>
             
             <a 
               href="https://saweria.co/faishalnr22" 
