@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 
+// Kamus bahasa untuk terjemahan
 const translations = {
   en: {
     title: 'Media Optimizer',
@@ -21,7 +22,12 @@ const translations = {
     btnDownload: 'Download File',
     donate: 'Support',
     errorNoFile: 'Please select a file first.',
-    errorProcess: 'An error occurred: '
+    errorProcess: 'An error occurred: ',
+    warningCPU: "This process takes time and uses your device's CPU. Please do not close this page.",
+    loadingEngine: 'Loading video compression engine...',
+    errorEngineLoading: 'Compression engine is loading, please wait a moment.',
+    scanQR: 'Scan Saweria QR',
+    openWeb: 'Open in Browser'
   },
   id: {
     title: 'Pengoptimal Media',
@@ -39,7 +45,12 @@ const translations = {
     btnDownload: 'Unduh Berkas',
     donate: 'Dukung Kami',
     errorNoFile: 'Pilih berkas terlebih dahulu.',
-    errorProcess: 'Terjadi kesalahan: '
+    errorProcess: 'Terjadi kesalahan: ',
+    warningCPU: 'Proses ini memakan waktu dan menggunakan CPU perangkat Anda. Jangan tutup halaman ini.',
+    loadingEngine: 'Memuat mesin kompresi video...',
+    errorEngineLoading: 'Mesin kompresi sedang dimuat, tunggu sebentar.',
+    scanQR: 'Scan QR Saweria',
+    openWeb: 'Buka via Web'
   }
 };
 
@@ -49,6 +60,9 @@ export default function Home() {
 
   // State untuk Tab Mode
   const [activeTab, setActiveTab] = useState<'image' | 'video'>('image');
+  
+  // State untuk Pop-up Donasi
+  const [showDonate, setShowDonate] = useState(false);
 
   // ================= STATE FOTO =================
   const [imgFile, setImgFile] = useState<File | null>(null);
@@ -115,7 +129,7 @@ export default function Home() {
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Gagal memproses gambar');
+      if (!response.ok) throw new Error('Gagal memproses gambar / Failed to process image');
 
       const blob = await response.blob();
       setImgCompressedSize(Number((blob.size / 1024).toFixed(2)));
@@ -153,7 +167,7 @@ export default function Home() {
 
   const handleCompressVid = async () => {
     if (!vidFile) return alert(t.errorNoFile);
-    if (!ffmpegLoaded) return alert('Mesin kompresi sedang dimuat, tunggu sebentar.');
+    if (!ffmpegLoaded) return alert(t.errorEngineLoading);
     
     setIsVidCompressing(true);
     setVidProgress(0);
@@ -294,7 +308,7 @@ export default function Home() {
               
               {!ffmpegLoaded && (
                 <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium animate-pulse text-center">
-                  Memuat mesin kompresi video...
+                  {t.loadingEngine}
                 </div>
               )}
 
@@ -316,7 +330,7 @@ export default function Home() {
                       {isVidCompressing ? `${t.btnCompressing} ${vidProgress}%` : t.btnCompress}
                     </span>
                   </button>
-                  {isVidCompressing && <p className="mt-3 text-xs text-gray-500">Proses ini memakan waktu dan menggunakan CPU perangkat Anda. Jangan tutup halaman ini.</p>}
+                  {isVidCompressing && <p className="mt-3 text-xs text-gray-500">{t.warningCPU}</p>}
                 </div>
               )}
             </div>
@@ -347,11 +361,51 @@ export default function Home() {
 
       </main>
 
-      {/* FLOATING DONATE BUTTON */}
-      <a href="https://saweria.co/faishalnr22" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 bg-slate-900 hover:bg-slate-800 text-white p-3 md:px-5 md:py-3 rounded-full shadow-xl transition-transform hover:scale-105 flex items-center gap-2 z-50 border border-slate-700" title={t.donate}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"></path><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path><line x1="6" y1="2" x2="6" y2="4"></line><line x1="10" y1="2" x2="10" y2="4"></line><line x1="14" y1="2" x2="14" y2="4"></line></svg>
-        <span className="hidden md:inline text-sm font-medium">{t.donate}</span>
-      </a>
+      {/* FLOATING DONATE BUTTON & QR POPUP */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        
+        {/* Modal/Pop-up QR Code */}
+        {showDonate && (
+          <div className="mb-4 bg-white p-4 rounded-xl shadow-2xl border border-gray-200 text-center w-48 transition-all animate-fade-in-up">
+            <p className="text-sm font-semibold text-gray-800 mb-2">{t.scanQR}</p>
+            
+            {/* Tempat Gambar QR Code */}
+            <div className="w-full aspect-square bg-gray-50 rounded-lg overflow-hidden border border-gray-200 mb-3 flex items-center justify-center">
+              <img 
+                src="/qr-saweria.png" 
+                alt="QR Code Saweria" 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            
+            <a 
+              href="https://saweria.co/faishalnr22" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block w-full bg-slate-900 text-white text-xs font-medium py-2 rounded-md hover:bg-slate-800 transition-colors"
+            >
+              {t.openWeb}
+            </a>
+          </div>
+        )}
+
+        {/* Tombol Utama */}
+        <button 
+          onClick={() => setShowDonate(!showDonate)}
+          className="bg-slate-900 hover:bg-slate-800 text-white p-3 md:px-5 md:py-3 rounded-full shadow-xl transition-transform hover:scale-105 flex items-center gap-2 border border-slate-700"
+          title={t.donate}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
+            <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path>
+            <line x1="6" y1="2" x2="6" y2="4"></line>
+            <line x1="10" y1="2" x2="10" y2="4"></line>
+            <line x1="14" y1="2" x2="14" y2="4"></line>
+          </svg>
+          <span className="hidden md:inline text-sm font-medium">{t.donate}</span>
+        </button>
+      </div>
+
     </div>
   );
 }
